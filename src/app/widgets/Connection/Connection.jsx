@@ -107,7 +107,12 @@ class Connection extends PureComponent {
         connection,
         alertMessage
       } = state;
-      const enableHardwareFlowControl = get(connection, 'serial.rtscts', false);
+      const controlFlag = get(connection, 'serial.controlFlag');
+      // Set or clear the DTR line immediately upon opening. No action will be taken if the state is not a boolean type.
+      const enableDTRControlFlag = (typeof controlFlag?.dtr === 'boolean');
+      // Set or clear the RTS line immediately upon opening. No action will be taken if the state is not a boolean type.
+      const enableRTSControlFlag = (typeof controlFlag?.rts === 'boolean');
+      const enableRTSCTSFlowControl = get(connection, 'serial.rtscts', false);
       const canSelectControllers = (controller.loadedControllers.length > 1);
       const hasGrblController = includes(controller.loadedControllers, GRBL);
       const hasMarlinController = includes(controller.loadedControllers, MARLIN);
@@ -120,7 +125,6 @@ class Connection extends PureComponent {
       const canChangeController = notLoading && notConnected;
       const canChangePort = notLoading && notConnected;
       const canChangeBaudrate = notLoading && notConnected && (!(this.isPortInUse(port)));
-      const canToggleHardwareFlowControl = notConnected;
       const canOpenPort = port && baudrate && notConnecting && notConnected;
       const canClosePort = connected;
 
@@ -272,17 +276,107 @@ class Connection extends PureComponent {
           </div>
           <div
             className={cx('checkbox', {
-              'disabled': !canToggleHardwareFlowControl
+              'disabled': connected,
             })}
           >
             <label>
               <input
                 type="checkbox"
-                defaultChecked={enableHardwareFlowControl}
-                onChange={actions.toggleHardwareFlowControl}
-                disabled={!canToggleHardwareFlowControl}
+                defaultChecked={enableDTRControlFlag}
+                onChange={actions.toggleDTRControlFlag}
+                disabled={connected}
               />
-              {i18n._('Enable hardware flow control')}
+              {i18n._('Set DTR line status upon opening')}
+            </label>
+          </div>
+          {enableDTRControlFlag && (
+            <div style={{ marginLeft: 20 }}>
+              <div className="input-group input-group-xs">
+                <div className="input-group-btn">
+                  <button
+                    type="button"
+                    className={cx(
+                      'btn',
+                      'btn-default',
+                      { 'btn-select': !!controlFlag.dtr }
+                    )}
+                    onClick={actions.setDTR}
+                  >
+                    {i18n._('SET')}
+                  </button>
+                  <button
+                    type="button"
+                    className={cx(
+                      'btn',
+                      'btn-default',
+                      { 'btn-select': !controlFlag.dtr }
+                    )}
+                    onClick={actions.clearDTR}
+                  >
+                    {i18n._('CLR')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          <div
+            className={cx('checkbox', {
+              'disabled': connected,
+            })}
+          >
+            <label>
+              <input
+                type="checkbox"
+                defaultChecked={enableRTSControlFlag}
+                onChange={actions.toggleRTSControlFlag}
+                disabled={connected}
+              />
+              {i18n._('Set RTS line status upon opening')}
+            </label>
+          </div>
+          {enableRTSControlFlag && (
+            <div style={{ marginLeft: 20 }}>
+              <div className="input-group input-group-xs">
+                <div className="input-group-btn">
+                  <button
+                    type="button"
+                    className={cx(
+                      'btn',
+                      'btn-default',
+                      { 'btn-select': !!controlFlag.rts }
+                    )}
+                    onClick={actions.setRTS}
+                  >
+                    {i18n._('SET')}
+                  </button>
+                  <button
+                    type="button"
+                    className={cx(
+                      'btn',
+                      'btn-default',
+                      { 'btn-select': !controlFlag.rts }
+                    )}
+                    onClick={actions.clearRTS}
+                  >
+                    {i18n._('CLR')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          <div
+            className={cx('checkbox', {
+              'disabled': connected,
+            })}
+          >
+            <label>
+              <input
+                type="checkbox"
+                defaultChecked={enableRTSCTSFlowControl}
+                onChange={actions.toggleRTSCTSFlowControl}
+                disabled={connected}
+              />
+              {i18n._('Use RTS/CTS flow control')}
             </label>
           </div>
           <div className="checkbox">

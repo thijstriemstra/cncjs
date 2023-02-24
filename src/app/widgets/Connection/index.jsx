@@ -79,7 +79,7 @@ class ConnectionWidget extends PureComponent {
           autoReconnect: checked
         }));
       },
-      toggleHardwareFlowControl: (event) => {
+      toggleRTSCTSFlowControl: (event) => {
         const checked = event.target.checked;
         this.setState(state => ({
           connection: {
@@ -89,6 +89,92 @@ class ConnectionWidget extends PureComponent {
               rtscts: checked
             }
           }
+        }));
+      },
+      toggleDTRControlFlag: (event) => {
+        const checked = event.target.checked;
+        this.setState(state => ({
+          connection: {
+            ...state.connection,
+            serial: {
+              ...state.connection.serial,
+              controlFlag: {
+                ...state.connection.serial.controlFlag,
+                dtr: checked ? true : null,
+              },
+            }
+          }
+        }));
+      },
+      setDTR: () => {
+        this.setState(state => ({
+          connection: {
+            ...state.connection,
+            serial: {
+              ...state.connection.serial,
+              controlFlag: {
+                ...state.connection.serial.controlFlag,
+                dtr: true,
+              },
+            },
+          },
+        }));
+      },
+      clearDTR: () => {
+        this.setState(state => ({
+          connection: {
+            ...state.connection,
+            serial: {
+              ...state.connection.serial,
+              controlFlag: {
+                ...state.connection.serial.controlFlag,
+                dtr: false,
+              },
+            },
+          },
+        }));
+      },
+      toggleRTSControlFlag: (event) => {
+        const checked = event.target.checked;
+        this.setState(state => ({
+          connection: {
+            ...state.connection,
+            serial: {
+              ...state.connection.serial,
+              controlFlag: {
+                ...state.connection.serial.controlFlag,
+                rts: checked ? true : null,
+              },
+            }
+          }
+        }));
+      },
+      setRTS: () => {
+        this.setState(state => ({
+          connection: {
+            ...state.connection,
+            serial: {
+              ...state.connection.serial,
+              controlFlag: {
+                ...state.connection.serial.controlFlag,
+                rts: true,
+              },
+            },
+          },
+        }));
+      },
+      clearRTS: () => {
+        this.setState(state => ({
+          connection: {
+            ...state.connection,
+            serial: {
+              ...state.connection.serial,
+              controlFlag: {
+                ...state.connection.serial.controlFlag,
+                rts: false,
+              },
+            },
+          },
         }));
       },
       handleRefreshPorts: (event) => {
@@ -229,6 +315,8 @@ class ConnectionWidget extends PureComponent {
       }
       if (connection) {
         this.config.set('connection.serial.rtscts', get(connection, 'serial.rtscts', false));
+        this.config.set('connection.serial.controlFlag.dtr', get(connection, 'serial.controlFlag.dtr', null));
+        this.config.set('connection.serial.controlFlag.rts', get(connection, 'serial.controlFlag.rts', null));
       }
       this.config.set('autoReconnect', autoReconnect);
     }
@@ -264,7 +352,11 @@ class ConnectionWidget extends PureComponent {
         baudrate: this.config.get('baudrate'),
         connection: {
           serial: {
-            rtscts: this.config.get('connection.serial.rtscts')
+            rtscts: this.config.get('connection.serial.rtscts'),
+            controlFlag: {
+              dtr: this.config.get('connection.serial.controlFlag.dtr'),
+              rts: this.config.get('connection.serial.controlFlag.rts'),
+            },
           }
         },
         autoReconnect: this.config.get('autoReconnect'),
@@ -325,7 +417,11 @@ class ConnectionWidget extends PureComponent {
       controller.openPort(port, {
         controllerType: this.state.controllerType,
         baudrate: baudrate,
-        rtscts: this.state.connection.serial.rtscts
+        rtscts: this.state.connection.serial.rtscts,
+        controlFlag: {
+          dtr: this.state.connection.serial.controlFlag.dtr,
+          rts: this.state.connection.serial.controlFlag.rts,
+        },
       }, (err) => {
         if (err) {
           this.setState(state => ({
